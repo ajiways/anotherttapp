@@ -23,7 +23,7 @@ export function getOrmConfig(): TypeOrmModuleOptions {
     migrationsTableName: 'migrations',
     logging: 'all',
     cli: {
-      migrationsDir: join(__dirname, '..', '/migrations', '/*.{ts,js}'),
+      migrationsDir: join(__dirname, '..', '/migrations'),
     },
   };
 }
