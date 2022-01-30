@@ -10,6 +10,6 @@ export default [
   {
     name: 'migrations:create-run-revert',
     ...getOrmConfig(),
-    migrations: [join(__dirname, '..', '/migrations', '*.{ts,js}')],
+    migrations: [join(__dirname, '..', '/migrations', '/*.{ts,js}')],
   },
 ];
