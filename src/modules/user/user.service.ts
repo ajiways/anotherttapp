@@ -27,13 +27,7 @@ export class UserService {
   }
 
   async findAll() {
-    const result = await this.userRepository.find();
-
-    if (!result.length) {
-      throw new HttpException('Пользователи не найдены', HttpStatus.NOT_FOUND);
-    }
-
-    return result;
+    return await this.userRepository.find();
   }
 
   async findOne(id: number) {
