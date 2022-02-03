@@ -43,10 +43,9 @@ export class UserController {
     return this.userService.createUser(dto);
   }
 
-  @Put('update/:id')
+  @Put('update')
   @UsePipes(ValidationPipe)
-  @UseGuards(ParamsIdGuard)
-  updateUser(@Body() dto: UpdateUserDto, @Param() params) {
-    return this.userService.updateUser(params.id, dto);
+  updateUser(@Body() dto: UpdateUserDto) {
+    return this.userService.updateUser(dto);
   }
 }

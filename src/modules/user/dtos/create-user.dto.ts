@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, Length, Min } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'Поле не должно быть пустым' })
@@ -20,4 +21,8 @@ export class CreateUserDto {
   @IsString({ message: 'Поле должно быть строкой' })
   @Length(2, 16, { message: 'От 2 до 16 символов' })
   secretAnswer?: string;
+
+  @Type(() => Number)
+  @Min(1, { message: 'Id группы не может быть меньше 1' })
+  groupId: number;
 }

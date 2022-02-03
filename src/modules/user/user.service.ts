@@ -5,11 +5,14 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './user.entity';
 import { hash } from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { Group } from '../group/group.entity';
+import { GroupService } from '../group/group.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly groupService: GroupService,
   ) {}
 
   private checkSecret(dto: CreateUserDto | UpdateUserDto) {
@@ -55,6 +58,12 @@ export class UserService {
       );
     }
 
+    const group = await this.groupService.findOne(dto.groupId);
+
+    if (!group) {
+      throw new HttpException(`Группа не найдена`, HttpStatus.BAD_REQUEST);
+    }
+
     this.checkSecret(dto);
 
     const hashedPassword = await hash(dto.password, 7);
@@ -62,6 +71,7 @@ export class UserService {
     return await this.userRepository
       .create({
         login: dto.login,
+        group,
         password: hashedPassword,
       })
       .save();
@@ -82,14 +92,22 @@ export class UserService {
     return { message: `Пользователь с id ${id} был удален` };
   }
 
-  async updateUser(id: number, dto: UpdateUserDto) {
-    const candidate = await this.userRepository.findOne({ where: { id } });
+  async updateUser(dto: UpdateUserDto) {
+    const candidate = await this.userRepository.findOne({
+      where: { login: dto.login },
+    });
+    let group: Group;
 
     if (!candidate) {
-      throw new HttpException(
-        `Пользователь с id ${id} не найден`,
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException(`Пользователь не найден`, HttpStatus.NOT_FOUND);
+    }
+
+    if (dto.groupId) {
+      group = await this.groupService.findOne(dto.groupId);
+
+      if (!group) {
+        throw new HttpException('Группа не найдена', HttpStatus.NOT_FOUND);
+      }
     }
 
     if (dto.password) {
@@ -99,6 +117,14 @@ export class UserService {
 
     this.checkSecret(dto);
 
-    return await this.userRepository.merge(candidate, dto).save();
+    return await this.userRepository
+      .merge(candidate, {
+        login: dto.login,
+        password: dto.password,
+        secret: dto.secret,
+        secretAnswer: dto.secretAnswer,
+        group,
+      })
+      .save();
   }
 }

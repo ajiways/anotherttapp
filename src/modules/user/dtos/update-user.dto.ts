@@ -1,4 +1,5 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsOptional, IsString, Length, Min } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -20,4 +21,9 @@ export class UpdateUserDto {
   @IsString({ message: 'Поле должно быть строкой' })
   @Length(2, 16, { message: 'От 2 до 16 символов' })
   secretAnswer?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @Min(1, { message: 'Id новой группы не может быть меньше 1' })
+  groupId: number;
 }

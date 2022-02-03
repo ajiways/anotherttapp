@@ -6,6 +6,9 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TokenModule } from './modules/token/token.module';
 import { DayModule } from './modules/day/day.module';
+import { GroupModule } from './modules/group/group.module';
+import { WeekModule } from './modules/week/week.module';
+import { LessonModule } from './modules/lesson/lesson.module';
 
 @Module({
   imports: [
@@ -17,6 +20,9 @@ import { DayModule } from './modules/day/day.module';
     AuthModule,
     TokenModule,
     DayModule,
+    GroupModule,
+    WeekModule,
+    LessonModule,
   ],
 })
 export class AppModule {}
