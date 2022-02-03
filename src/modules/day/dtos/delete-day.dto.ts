@@ -1,14 +1,7 @@
-import { Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsAlphanumeric,
-  IsEnum,
-  IsOptional,
-  Length,
-} from 'class-validator';
+import { IsAlphanumeric, IsEnum, Length } from 'class-validator';
 import { weekType } from '../../week/week.entity';
 
-export class CreateDayDto {
+export class DeleteDayDto {
   @IsAlphanumeric('ru-RU', { message: 'Только русские буквы' })
   @Length(5, 32, { message: 'Не меньше 5 и не больше 32 символов' })
   name: string;
@@ -18,9 +11,4 @@ export class CreateDayDto {
 
   @IsEnum(weekType, { message: 'Только четное или нечетное' })
   weekType: weekType;
-
-  @IsOptional()
-  @Type(() => Array)
-  @ArrayMinSize(1) // TODO: Попробовать нормально реализовать этот момент
-  lessons?: number[];
 }

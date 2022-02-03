@@ -1,4 +1,14 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Lesson } from '../lesson/lesson.entity';
+import { Week } from '../week/week.entity';
 
 @Entity('days')
 export class Day extends BaseEntity {
@@ -10,7 +20,10 @@ export class Day extends BaseEntity {
   })
   name: string;
 
-  group: null; // TODO: Группы
+  @ManyToOne(() => Week)
+  @JoinColumn()
+  week: Week;
 
-  lessons: null[]; // TODO: Пары
+  @OneToMany(() => Lesson, (lesson) => lesson.day)
+  lessons: Lesson[];
 }

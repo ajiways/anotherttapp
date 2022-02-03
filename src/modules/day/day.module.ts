@@ -7,5 +7,3 @@ import { DayController } from './day.controller';
   controllers: [DayController],
 })
 export class DayModule {}
-
-// TODO: Реализовать группы и пары для корректной работы этого модуля
