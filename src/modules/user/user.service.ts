@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -7,12 +7,15 @@ import { hash } from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
+import { IParams } from './interfaces/params.interface';
 
 @Injectable()
 export class UserService {
+  @Inject()
+  private readonly groupService: GroupService;
+
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly groupService: GroupService,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   private checkSecret(dto: CreateUserDto | UpdateUserDto) {
@@ -31,6 +34,10 @@ export class UserService {
 
   async findAll() {
     return await this.userRepository.find();
+  }
+
+  async findWithParams(params: IParams) {
+    return await this.userRepository.findOne({ ...params });
   }
 
   async findOne(id: number) {

@@ -1,7 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../user/user.entity';
 import { LoginDto } from './dtos/login.dto';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
@@ -9,13 +6,10 @@ import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
-    private userService: UserService,
-  ) {}
+  constructor(private userService: UserService) {}
 
   async login(dto: LoginDto) {
-    const candidate = await this.userRepository.findOne({
+    const candidate = await this.userService.findWithParams({
       where: { login: dto.login },
     });
 
@@ -39,7 +33,7 @@ export class AuthService {
   }
 
   async register(dto: CreateUserDto) {
-    const candidate = await this.userRepository.findOne({
+    const candidate = await this.userService.findWithParams({
       where: { login: dto.login },
     });
 
