@@ -3,10 +3,15 @@ import { LoginDto } from './dtos/login.dto';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
 import { UserService } from '../user/user.service';
+import { TokenService } from '../token/token.service';
+import { IPayload } from '../token/interfaces/payload.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private tokenService: TokenService,
+  ) {}
 
   async login(dto: LoginDto) {
     const candidate = await this.userService.findWithParams({
@@ -27,7 +32,15 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       } else {
-        console.log('Success login');
+        const payload: IPayload = {
+          id: candidate.id,
+          password: candidate.password,
+        };
+
+        return {
+          message: 'Успешный вход',
+          token: this.tokenService.generateToken(payload),
+        };
       }
     }
   }
