@@ -25,13 +25,13 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @UseGuards(ParamsIdGuard)
   getUserById(@Param() params): Promise<User> {
     return this.userService.findOne(params.id);
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @UseGuards(ParamsIdGuard)
   deleleUserById(@Param() params) {
     return this.userService.deleteUser(params.id);
