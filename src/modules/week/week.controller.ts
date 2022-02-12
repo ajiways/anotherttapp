@@ -25,7 +25,7 @@ export class WeekController {
     return await this.weekService.findAll();
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @UseGuards(ParamsIdGuard)
   async getWeekById(@Param() params) {
     return await this.weekService.findOne(params.id);
