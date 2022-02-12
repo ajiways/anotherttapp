@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Day } from '../day/day.entity';
-import { Group } from '../group/group.entity';
-import { Week } from '../week/week.entity';
+import { IParams } from '../../interfaces/params.interface';
+import { DayService } from '../day/day.service';
+import { GroupService } from '../group/group.service';
+import { WeekService } from '../week/week.service';
 import { CreateLessonDto } from './dtos/create-lesson.dto';
 import { DeleteLessonDto } from './dtos/delete-lesson.dto';
 import { UpdateLessonDto } from './dtos/update-lessons.dto';
@@ -14,20 +15,25 @@ export class LessonService {
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
+    private readonly groupService: GroupService,
+    private readonly weekService: WeekService,
+    private readonly dayService: DayService,
   ) {}
 
   private async findMisc(
     dto: CreateLessonDto | UpdateLessonDto | DeleteLessonDto,
   ) {
-    const group = await Group.findOne({
+    const group = await this.groupService.findOneWithParams({
       where: { name: dto.groupName },
     });
 
-    const week = await Week.findOne({
+    const week = await this.weekService.findOneWithParams({
       where: { type: dto.weekType, group },
     });
 
-    return await Day.findOne({ where: { week, name: dto.dayName } });
+    return await this.dayService.findOneWithParams({
+      where: { week, name: dto.dayName },
+    });
   }
 
   async findAll() {
@@ -91,5 +97,18 @@ export class LessonService {
     }
 
     return await candidate.remove();
+  }
+
+  async findOneWithParams(params: IParams) {
+    const result = await this.lessonRepository.findOne({ ...params });
+
+    if (!result) {
+      throw new HttpException(
+        `Пара с указанными параметрами не найдена!`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return result;
   }
 }
