@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { IParams } from '../../interfaces/params.interface';
 import { Group } from '../group/group.entity';
 import { Week } from '../week/week.entity';
 import { Day } from './day.entity';
 import { CreateDayDto } from './dtos/create-day.dto';
 import { DeleteDayDto } from './dtos/delete-day.dto';
-import { GetDayDto } from './dtos/get-day.dto';
 import { UpdateDayDto } from './dtos/update-day.dto';
 
 @Injectable()
@@ -24,7 +24,9 @@ export class DayService {
       where: { type: dto.weekType, group },
     });
 
-    const day = await Day.findOne({ where: { week, name: dto.name } });
+    const day = await this.findOneWithParams({
+      where: { week, name: dto.name },
+    });
 
     return {
       group,
@@ -35,31 +37,6 @@ export class DayService {
 
   async findAll() {
     return await this.dayRepository.find();
-  }
-
-  async getByName(dto: GetDayDto) {
-    const result = await this.dayRepository.findOne({
-      where: { name: dto.name },
-    });
-
-    if (!result) {
-      throw new HttpException(`День не найден!`, HttpStatus.NOT_FOUND);
-    }
-
-    return result;
-  }
-
-  async findOne(id: number) {
-    const result = await this.dayRepository.findOne({ where: { id } });
-
-    if (!result) {
-      throw new HttpException(
-        `День с id ${id} не найден!`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return result;
   }
 
   async deleteDay(dto: DeleteDayDto) {
@@ -84,5 +61,31 @@ export class DayService {
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
     // TODO: Попытаться это реализовать
+  }
+
+  async findAllWithParams(params: IParams) {
+    const result = await this.dayRepository.find({ ...params });
+
+    if (!result) {
+      throw new HttpException(
+        'Дни с указанными параметрами не найдены',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return result;
+  }
+
+  async findOneWithParams(params: IParams) {
+    const result = await this.dayRepository.findOne({ ...params });
+
+    if (!result) {
+      throw new HttpException(
+        `День с указанными параметрами не найден!`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return result;
   }
 }

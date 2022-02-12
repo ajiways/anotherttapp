@@ -13,7 +13,6 @@ import { ParamsIdGuard } from '../../guards/params-id.guard';
 import { ValidationPipe } from '../../pipes/validation.pipe';
 import { DayService } from './day.service';
 import { CreateDayDto } from './dtos/create-day.dto';
-import { GetDayDto } from './dtos/get-day.dto';
 import { UpdateDayDto } from './dtos/update-day.dto';
 
 @Controller('day')
@@ -25,17 +24,12 @@ export class DayController {
     return await this.dayService.findAll();
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @UseGuards(ParamsIdGuard)
   async getUserById(@Param() params) {
-    return await this.dayService.findOne(params.id);
-  }
-
-  @Get('one')
-  @Delete()
-  @UsePipes(ValidationPipe)
-  async getByName(@Body() dto: GetDayDto) {
-    return await this.dayService.getByName(dto);
+    return await this.dayService.findOneWithParams({
+      where: { id: params.id },
+    });
   }
 
   @Post()
