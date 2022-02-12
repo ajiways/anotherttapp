@@ -1,7 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Group } from '../group/group.entity';
+import { IParams } from '../../interfaces/params.interface';
+import { GroupService } from '../group/group.service';
 import { CreateWeekDto } from './dtos/create-week.dto';
 import { DeleteWeekDto } from './dtos/delete-week.dto';
 import { GetWeekDto } from './dtos/get-week.dto';
@@ -13,12 +20,15 @@ export class WeekService {
   constructor(
     @InjectRepository(Week)
     private readonly weekRepository: Repository<Week>,
+    @Inject(forwardRef(() => GroupService)) private groupService: GroupService,
   ) {}
 
   private async findGroup(
     dto: CreateWeekDto | UpdateWeekDto | DeleteWeekDto | GetWeekDto,
   ) {
-    const result = await Group.findOne({ where: { id: dto.groupId } });
+    const result = await this.groupService.findOneWithParams({
+      where: { id: dto.groupId },
+    });
 
     if (!result) {
       throw new HttpException(
@@ -93,5 +103,31 @@ export class WeekService {
     }
 
     return await candidate.remove();
+  }
+
+  async findAllWithParams(params: IParams) {
+    const result = await this.weekRepository.find({ ...params });
+
+    if (!result.length) {
+      throw new HttpException(
+        'Недели с указанными параметрами не найдены!',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return result;
+  }
+
+  async findOneWithParams(params: IParams) {
+    const result = await this.weekRepository.findOne({ ...params });
+
+    if (!result) {
+      throw new HttpException(
+        'Неделя с указанными параметрами не найдена!',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return result;
   }
 }
