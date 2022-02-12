@@ -14,7 +14,7 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const candidate = await this.userService.findWithParams({
+    const candidate = await this.userService.findOneWithParams({
       where: { login: dto.login },
     });
 
@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   async register(dto: CreateUserDto) {
-    const candidate = await this.userService.findWithParams({
+    const candidate = await this.userService.findOneWithParams({
       where: { login: dto.login },
     });
 
