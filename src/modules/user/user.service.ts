@@ -7,7 +7,7 @@ import { hash } from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
-import { IParams } from './interfaces/params.interface';
+import { IParams } from '../../interfaces/params.interface';
 
 @Injectable()
 export class UserService {
@@ -36,7 +36,7 @@ export class UserService {
     return await this.userRepository.find();
   }
 
-  async findWithParams(params: IParams) {
+  async findOneWithParams(params: IParams) {
     return await this.userRepository.findOne({ ...params });
   }
 
@@ -54,7 +54,7 @@ export class UserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    const candidate = await this.userRepository.findOne({
+    const candidate = await this.findOneWithParams({
       where: { login: dto.login },
     });
 
@@ -65,11 +65,9 @@ export class UserService {
       );
     }
 
-    const group = await this.groupService.findOne(dto.groupId);
-
-    if (!group) {
-      throw new HttpException(`Группа не найдена`, HttpStatus.BAD_REQUEST);
-    }
+    const group = await this.groupService.findOneWithParams({
+      where: { id: dto.groupId },
+    });
 
     this.checkSecret(dto);
 
@@ -85,14 +83,7 @@ export class UserService {
   }
 
   async deleteUser(id: number) {
-    const candidate = await this.userRepository.findOne({ where: { id } });
-
-    if (!candidate) {
-      throw new HttpException(
-        `Пользователь с id ${id} не найден`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    await this.findOne(id);
 
     await this.userRepository.delete(id);
 
@@ -100,7 +91,7 @@ export class UserService {
   }
 
   async updateUser(dto: UpdateUserDto) {
-    const candidate = await this.userRepository.findOne({
+    const candidate = await this.findOneWithParams({
       where: { login: dto.login },
     });
     let group: Group;
@@ -110,11 +101,9 @@ export class UserService {
     }
 
     if (dto.groupId) {
-      group = await this.groupService.findOne(dto.groupId);
-
-      if (!group) {
-        throw new HttpException('Группа не найдена', HttpStatus.NOT_FOUND);
-      }
+      group = await this.groupService.findOneWithParams({
+        where: { id: dto.groupId },
+      });
     }
 
     if (dto.password) {

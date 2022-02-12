@@ -5,10 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
+import { WeekService } from '../week/week.service';
+import { Week } from '../week/week.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Group])],
-  providers: [UserService, GroupService],
+  imports: [TypeOrmModule.forFeature([User, Group, Week])],
+  providers: [UserService, GroupService, WeekService],
   controllers: [UserController],
   exports: [UserService],
 })
