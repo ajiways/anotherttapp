@@ -1,8 +1,16 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { IParams } from '../../interfaces/params.interface';
+import { GetDays } from '../group/dtos/get-days.dto';
+import { WeekService } from '../week/week.service';
 import { CreateGroupDto } from './dtos/create-group.dto';
-import { GetGroupDto } from './dtos/get-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { Group } from './group.entity';
 
@@ -11,52 +19,15 @@ export class GroupService {
   constructor(
     @InjectRepository(Group)
     private readonly groupRepository: Repository<Group>,
+    @Inject(forwardRef(() => WeekService)) private weekService: WeekService,
   ) {}
 
   async findAll() {
     return await this.groupRepository.find();
   }
 
-  async getByName(dto: GetGroupDto) {
-    const candidate = await this.groupRepository.findOne({
-      where: { name: dto.name },
-    });
-
-    if (!candidate) {
-      throw new HttpException(`Группа не найдена!`, HttpStatus.NOT_FOUND);
-    }
-
-    return candidate;
-  }
-
-  async findOne(id: number) {
-    const result = await this.groupRepository.findOne({ where: { id } });
-
-    if (!result) {
-      throw new HttpException(
-        `Группа с id ${id} не найдена!`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return result;
-  }
-
-  async findOneByName(name: string) {
-    const result = await this.groupRepository.findOne({ where: { name } });
-
-    if (!result) {
-      throw new HttpException(
-        `Группа ${name} не найдена!`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return result;
-  }
-
   async createGroup(dto: CreateGroupDto) {
-    const candidate = await this.groupRepository.findOne({
+    const candidate = await this.findOneWithParams({
       where: { name: dto.name },
     });
 
@@ -71,30 +42,37 @@ export class GroupService {
   }
 
   async updateGroup(dto: UpdateGroupDto) {
-    const candidate = await this.groupRepository.findOne({
+    const candidate = await this.findOneWithParams({
       where: { name: dto.name },
     });
-
-    if (!candidate) {
-      throw new HttpException(
-        'Группа с таким названием не существует',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
     return await this.groupRepository.merge(candidate, dto).save();
   }
 
   async deleteGroup(id: number) {
-    const candidate = await this.findOne(id);
+    await this.findOneWithParams({ where: { id } });
 
-    if (!candidate) {
+    return await this.groupRepository.delete(id);
+  }
+
+  async findOneWithParams(params: IParams) {
+    const result = await this.groupRepository.findOne({ ...params });
+
+    if (!result) {
       throw new HttpException(
-        `Группа с id ${id} не найдена!`,
+        `Группа с указанными параметрами не найдена!`,
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return await this.groupRepository.delete(id);
+    return result;
+  }
+
+  async getWeeksByGroupId(dto: GetDays) {
+    await this.findOneWithParams({ where: { id: dto.groupId } });
+
+    return await this.weekService.findAllWithParams({
+      where: { groupId: dto.groupId },
+    });
   }
 }
