@@ -40,6 +40,11 @@ export class Lesson extends BaseEntity {
   teacherName: string;
 
   @Column({
+    length: 56,
+  })
+  teacherLastName: string;
+
+  @Column({
     length: 16,
   })
   cabinetNumber: string;

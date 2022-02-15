@@ -24,6 +24,7 @@ export class Day extends BaseEntity {
   @JoinColumn()
   week: Week;
 
-  @OneToMany(() => Lesson, (lesson) => lesson.day)
+  @OneToMany(() => Lesson, (lesson) => lesson.day, { eager: true })
+  @JoinColumn()
   lessons: Lesson[];
 }
