@@ -7,7 +7,10 @@ export class CreateLessonDto {
   @Length(3, 32, { message: 'От 3 до 32 символов' })
   name: string;
 
-  @IsEnum(lessonType)
+  @IsEnum(lessonType, {
+    message:
+      'Правильно укажите тип занятия: "ЛЕКЦИЯ", "ПРАКТИКА", "ЛАБАРАТОРНАЯ"',
+  })
   type: lessonType;
 
   @Length(11, 12, { message: 'Время должно быть в формате: "13:00-13:30"' })
@@ -17,13 +20,17 @@ export class CreateLessonDto {
   @Length(3, 32, { message: 'От 3 до 32 символов' })
   teacherName: string;
 
+  @IsAlphanumeric('ru-RU', { message: 'Только русские буквы' })
+  @Length(3, 32, { message: 'От 3 до 32 символов' })
+  teacherLastName: string;
+
   @Length(1, 16, { message: 'От 1 до 16 символов' })
   cabinetNumber: string;
 
   @Length(3, 16, { message: 'От 3 до 16 символов' })
   groupName: string;
 
-  @IsEnum(weekType)
+  @IsEnum(weekType, { message: 'Только EVEN и ODD' })
   weekType: weekType;
 
   @Length(3, 16, { message: 'От 3 до 16 символов' })
