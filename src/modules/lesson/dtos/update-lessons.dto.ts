@@ -9,7 +9,10 @@ export class UpdateLessonDto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(lessonType)
+  @IsEnum(lessonType, {
+    message:
+      'Правильно укажите тип занятия: "ЛЕКЦИЯ", "ПРАКТИКА", "ЛАБАРАТОРНАЯ"',
+  })
   type?: lessonType;
 
   @IsOptional()
@@ -22,13 +25,18 @@ export class UpdateLessonDto {
   teacherName?: string;
 
   @IsOptional()
+  @IsAlphanumeric('ru-RU', { message: 'Только русские буквы' })
+  @Length(3, 32, { message: 'От 3 до 32 символов' })
+  teacherLastName?: string;
+
+  @IsOptional()
   @Length(1, 16, { message: 'От 1 до 16 символов' })
   cabinetNumber?: string;
 
   @Length(3, 16, { message: 'От 3 до 16 символов' })
   groupName: string;
 
-  @IsEnum(weekType)
+  @IsEnum(weekType, { message: 'Только EVEN и ODD' })
   weekType: weekType;
 
   @Length(3, 16, { message: 'От 3 до 16 символов' })
