@@ -8,6 +8,16 @@ import {
 } from 'class-validator';
 import { weekType } from '../../week/week.entity';
 
+export enum weekDayNames {
+  monday = 'Понедельник',
+  tuesday = 'Вторник',
+  wednesday = 'Среда',
+  thursday = 'Четверг',
+  friday = 'Пятница',
+  saturday = 'Суббота',
+  sunday = 'Воскресенье',
+}
+
 export class CreateDayDto {
   @IsAlphanumeric('ru-RU', { message: 'Только русские буквы' })
   @Length(5, 32, { message: 'Не меньше 5 и не больше 32 символов' })
