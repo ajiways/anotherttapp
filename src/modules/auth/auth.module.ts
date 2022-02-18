@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Day } from '../day/day.entity';
+import { DayService } from '../day/day.service';
 import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
 import { TokenService } from '../token/token.service';
@@ -11,7 +13,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Group, Week])],
+  imports: [TypeOrmModule.forFeature([User, Group, Week, Day])],
   controllers: [AuthController],
   providers: [
     AuthService,
@@ -19,6 +21,7 @@ import { AuthService } from './auth.service';
     TokenService,
     GroupService,
     WeekService,
+    DayService,
   ],
 })
 export class AuthModule {}

@@ -7,10 +7,12 @@ import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
 import { WeekService } from '../week/week.service';
 import { Week } from '../week/week.entity';
+import { DayService } from '../day/day.service';
+import { Day } from '../day/day.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Group, Week])],
-  providers: [UserService, GroupService, WeekService],
+  imports: [TypeOrmModule.forFeature([User, Group, Week, Day])],
+  providers: [UserService, GroupService, WeekService, DayService],
   controllers: [UserController],
   exports: [UserService],
 })
