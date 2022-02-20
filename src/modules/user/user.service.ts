@@ -8,6 +8,8 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { Group } from '../group/group.entity';
 import { GroupService } from '../group/group.service';
 import { IParams } from '../../interfaces/params.interface';
+import { IRelations } from '../../interfaces/relations.interface';
+import { ServiceResponse } from '../../interfaces/service.response';
 
 @Injectable()
 export class UserService {
@@ -32,15 +34,21 @@ export class UserService {
     }
   }
 
-  async findAll() {
-    return await this.userRepository.find();
+  async findAll(): Promise<ServiceResponse<User>> {
+    const result = await this.userRepository.find();
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Успешно',
+      entities: result,
+    };
   }
 
-  async findOneWithParams(params: IParams) {
-    return await this.userRepository.findOne({ ...params });
+  async findOneWithParams(params: IParams, relations?: IRelations) {
+    return await this.userRepository.findOne({ ...params, ...relations });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<ServiceResponse> {
     const result = await this.userRepository.findOne({ where: { id } });
 
     if (!result) {
@@ -50,10 +58,14 @@ export class UserService {
       );
     }
 
-    return result;
+    return {
+      status: HttpStatus.OK,
+      message: 'Успешно!',
+      entity: result,
+    };
   }
 
-  async createUser(dto: CreateUserDto) {
+  async createUser(dto: CreateUserDto): Promise<ServiceResponse> {
     const candidate = await this.findOneWithParams({
       where: { login: dto.login },
     });
@@ -73,24 +85,33 @@ export class UserService {
 
     const hashedPassword = await hash(dto.password, 7);
 
-    return await this.userRepository
+    const result = await this.userRepository
       .create({
         login: dto.login,
         group,
         password: hashedPassword,
       })
       .save();
+
+    return {
+      status: HttpStatus.CREATED,
+      message: `Пользователь ${result.login} успешно добавлен в систему`,
+      entity: result,
+    };
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number): Promise<ServiceResponse> {
     await this.findOne(id);
 
     await this.userRepository.delete(id);
 
-    return { message: `Пользователь с id ${id} был удален` };
+    return {
+      status: HttpStatus.OK,
+      message: `Пользователь с id ${id} был удален`,
+    };
   }
 
-  async updateUser(dto: UpdateUserDto) {
+  async updateUser(dto: UpdateUserDto): Promise<ServiceResponse> {
     const candidate = await this.findOneWithParams({
       where: { login: dto.login },
     });
@@ -113,7 +134,7 @@ export class UserService {
 
     this.checkSecret(dto);
 
-    return await this.userRepository
+    const result = await this.userRepository
       .merge(candidate, {
         login: dto.login,
         password: dto.password,
@@ -122,5 +143,11 @@ export class UserService {
         group,
       })
       .save();
+
+    return {
+      status: HttpStatus.OK,
+      message: `Пользователь ${dto.login} успешно обновлен`,
+      entity: result,
+    };
   }
 }

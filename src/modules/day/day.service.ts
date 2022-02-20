@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IParams } from '../../interfaces/params.interface';
+import { ServiceResponse } from '../../interfaces/service.response';
 import { Group } from '../group/group.entity';
 import { Week } from '../week/week.entity';
 import { Day } from './day.entity';
@@ -35,27 +36,79 @@ export class DayService {
     };
   }
 
-  async findAll() {
-    return await this.dayRepository.find();
+  async findAll(): Promise<ServiceResponse<Day>> {
+    const result = await this.dayRepository.find();
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Успешно!',
+      entities: result,
+    };
   }
 
-  async deleteDay(dto: DeleteDayDto) {
-    return await (await this.findMisc(dto)).day.remove();
+  async deleteDay(dto: DeleteDayDto): Promise<ServiceResponse> {
+    const misc = await this.findMisc(dto);
+    await misc.day.remove();
+
+    let weekType: string;
+
+    if (dto.weekType === 'EVEN') {
+      weekType = 'четную';
+    } else {
+      weekType = 'нечетную';
+    }
+
+    return {
+      status: HttpStatus.OK,
+      message: `${dto.name} успешно удален из ${weekType} недели группы ${misc.group.name}`,
+    };
   }
 
-  async createDay(dto: CreateDayDto) {
-    const tempStore = await this.findMisc(dto);
+  async createDay(dto: CreateDayDto): Promise<ServiceResponse> {
+    const group = await Group.findOne({ where: { name: dto.groupName } });
 
-    return await this.dayRepository
+    if (!group) {
+      throw new HttpException(
+        `Группа ${dto.groupName} не найдена`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const week = await Week.findOne({
+      where: { type: dto.weekType, group: group },
+    });
+
+    if (!week) {
+      throw new HttpException(
+        `У группы ${dto.groupName} нет недели с типом ${dto.weekType}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const newDay = await this.dayRepository
       .create({
-        name: tempStore.day.name,
-        week: tempStore.week,
+        name: dto.name,
+        week: week,
         lessons: [],
       })
       .save();
+
+    let weekType: string;
+
+    if (dto.weekType === 'EVEN') {
+      weekType = 'четную';
+    } else {
+      weekType = 'нечетную';
+    }
+
+    return {
+      status: HttpStatus.CREATED,
+      message: `День ${dto.name} успешно добавлен в ${weekType} неделю группы ${dto.groupName}`,
+      entity: newDay,
+    };
   }
 
-  async updateDay(dto: UpdateDayDto) {
+  async updateDay(dto: UpdateDayDto): Promise<void> {
     throw new HttpException(
       'Пока не реализовано',
       HttpStatus.INTERNAL_SERVER_ERROR,
@@ -63,7 +116,7 @@ export class DayService {
     // TODO: Попытаться это реализовать
   }
 
-  async findAllWithParams(params: IParams) {
+  async findAllWithParams(params: IParams): Promise<Day[]> {
     const result = await this.dayRepository.find({ ...params });
 
     if (!result) {
@@ -76,7 +129,7 @@ export class DayService {
     return result;
   }
 
-  async findOneWithParams(params: IParams) {
+  async findOneWithParams(params: IParams): Promise<Day> {
     const result = await this.dayRepository.findOne({ ...params });
 
     if (!result) {

@@ -4,7 +4,10 @@ import { compare } from 'bcrypt';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
-import { IPayload } from '../token/interfaces/payload.interface';
+import {
+  IAccessPayload,
+  IRefreshPayload,
+} from '../token/interfaces/payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -13,10 +16,13 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  async login(dto: LoginDto) {
-    const candidate = await this.userService.findOneWithParams({
-      where: { login: dto.login },
-    });
+  async login(dto: LoginDto, agent: string) {
+    const candidate = await this.userService.findOneWithParams(
+      {
+        where: { login: dto.login },
+      },
+      { relations: ['roles'] },
+    );
 
     if (!candidate) {
       throw new HttpException(
@@ -32,14 +38,29 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       } else {
-        const payload: IPayload = {
+        console.log(candidate);
+
+        const roleNamesArr: string[] = candidate.roles.map((role) => {
+          return role.name;
+        });
+
+        const accessPayload: IAccessPayload = {
           id: candidate.id,
           password: candidate.password,
+          roles: [...roleNamesArr],
+        };
+
+        const refreshPayload: IRefreshPayload = {
+          agent,
+          date: Date.now(),
         };
 
         return {
           message: 'Успешный вход',
-          token: this.tokenService.generateToken(payload),
+          tokens: this.tokenService.generateTokens(
+            accessPayload,
+            refreshPayload,
+          ),
         };
       }
     }

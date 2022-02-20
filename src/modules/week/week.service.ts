@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IParams } from '../../interfaces/params.interface';
+import { ServiceResponse } from '../../interfaces/service.response';
 import { GroupService } from '../group/group.service';
 import { CreateWeekDto } from './dtos/create-week.dto';
 import { DeleteWeekDto } from './dtos/delete-week.dto';
@@ -40,35 +41,33 @@ export class WeekService {
     return result;
   }
 
-  async findAll() {
-    return await this.weekRepository.find();
-  }
-
-  async findOne(id: number) {
-    const result = await this.weekRepository.findOne({ where: { id } });
-
-    if (!result) {
-      throw new HttpException(
-        `Пара с id ${id} не найдена!`,
-        HttpStatus.BAD_REQUEST,
-      );
+  private checkType(dto: CreateWeekDto | DeleteWeekDto | UpdateWeekDto) {
+    if (dto.type === 'EVEN') {
+      return 'четная';
+    } else {
+      return 'нечетная';
     }
-
-    return result;
   }
 
-  async createWeek(dto: CreateWeekDto) {
+  async createWeek(dto: CreateWeekDto): Promise<ServiceResponse> {
     const group = await this.findGroup(dto);
 
-    return await this.weekRepository
+    await this.weekRepository
       .create({
         group,
         type: dto.type,
       })
       .save();
+
+    const weekType = this.checkType(dto);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: `${weekType} неделя успешно добавлена группе ${group.name}`,
+    };
   }
 
-  async updateWeek(dto: UpdateWeekDto) {
+  async updateWeek(dto: UpdateWeekDto): Promise<ServiceResponse> {
     const group = await this.findGroup(dto);
 
     const week = await this.weekRepository.findOne({
@@ -82,16 +81,24 @@ export class WeekService {
       );
     }
 
-    return await this.weekRepository
+    const result = await this.weekRepository
       .merge(week, {
         type: dto.newType,
       })
       .save();
 
+    const weekType = this.checkType(dto);
+
+    return {
+      status: HttpStatus.OK,
+      message: `${weekType} неделя успешно обновлена у группы ${group.name}`,
+      entity: result,
+    };
+
     // TODO: Подумать над нормальной реализацией обновления сущностей
   }
 
-  async deleteWeek(dto: DeleteWeekDto) {
+  async deleteWeek(dto: DeleteWeekDto): Promise<ServiceResponse> {
     const group = await this.findGroup(dto);
 
     const candidate = await this.weekRepository.findOne({
@@ -102,11 +109,30 @@ export class WeekService {
       throw new HttpException(`Неделя не найдена!`, HttpStatus.BAD_REQUEST);
     }
 
-    return await candidate.remove();
+    await candidate.remove();
+
+    const weekType = this.checkType(dto);
+
+    return {
+      status: HttpStatus.OK,
+      message: `${weekType} неделя была успешно удалена из ${group.name}`,
+    };
   }
 
-  async findAllWithParams(params: IParams) {
-    const result = await this.weekRepository.find({ ...params });
+  async findAllWithParams(
+    params: IParams,
+    relations: boolean,
+  ): Promise<Week[]> {
+    let result: Week[];
+
+    if (relations) {
+      result = await this.weekRepository.find({
+        ...params,
+        relations: ['days'],
+      });
+    } else {
+      result = await this.weekRepository.find({ ...params });
+    }
 
     if (!result.length) {
       throw new HttpException(
@@ -118,7 +144,7 @@ export class WeekService {
     return result;
   }
 
-  async findOneWithParams(params: IParams) {
+  async findOneWithParams(params: IParams): Promise<Week> {
     const result = await this.weekRepository.findOne({ ...params });
 
     if (!result) {
