@@ -28,15 +28,17 @@ export class AuthController {
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
+    @Req() req,
   ) {
-    const response = await this.authService.login(dto);
+    const response = await this.authService.login(dto, req.get('User-agent'));
 
-    res.cookie('token', response.token);
+    res.cookie('refreshToken', response.tokens.refreshToken);
     res.status(HttpStatus.OK);
 
     res.json({
       statusCode: HttpStatus.OK,
       message: response.message,
+      token: response.tokens.accessToken,
     });
   }
 
@@ -55,7 +57,9 @@ export class AuthController {
       );
     }
 
-    const decodedData = this.tokenService.verifyToken(req.cookies.token);
+    const decodedData = this.tokenService.validateAccessToken(
+      req.cookies.token,
+    );
 
     if (!decodedData) {
       throw new HttpException(

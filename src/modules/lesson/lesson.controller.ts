@@ -2,14 +2,11 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
-  Param,
+  HttpCode,
   Post,
   Put,
-  UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { ParamsIdGuard } from '../../guards/params-id.guard';
 import { ValidationPipe } from '../../pipes/validation.pipe';
 import { CreateLessonDto } from './dtos/create-lesson.dto';
 import { DeleteLessonDto } from './dtos/delete-lesson.dto';
@@ -20,18 +17,8 @@ import { LessonService } from './lesson.service';
 export class LessonController {
   constructor(private readonly lessonService: LessonService) {}
 
-  @Get()
-  async getAllLessons() {
-    return await this.lessonService.findAll();
-  }
-
-  @Get(':id')
-  @UseGuards(ParamsIdGuard)
-  async getLessonById(@Param() params) {
-    return await this.lessonService.findOne(params.id);
-  }
-
   @Post('create')
+  @HttpCode(201)
   @UsePipes(ValidationPipe)
   async createLesson(@Body() dto: CreateLessonDto) {
     return await this.lessonService.createLesson(dto);

@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { ParamsIdGuard } from '../../guards/params-id.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from './user.entity';
 import { UserService } from './user.service';
 import { ValidationPipe } from '../../pipes/validation.pipe';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -21,13 +20,13 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get()
-  getAllUsers(): Promise<User[]> {
+  getAllUsers() {
     return this.userService.findAll();
   }
 
   @Get('one/:id')
   @UseGuards(ParamsIdGuard)
-  getUserById(@Param() params): Promise<User> {
+  getUserById(@Param() params) {
     return this.userService.findOne(params.id);
   }
 

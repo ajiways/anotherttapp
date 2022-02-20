@@ -3,12 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { AdminGuard } from '../../guards/admin.guard';
 import { ParamsIdGuard } from '../../guards/params-id.guard';
 import { ValidationPipe } from '../../pipes/validation.pipe';
 import { GetDays } from '../group/dtos/get-days.dto';
@@ -17,7 +19,7 @@ import { GetGroupDto } from './dtos/get-group.dto';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { GroupService } from './group.service';
 
-@Controller('groups')
+@Controller('group')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
@@ -30,7 +32,7 @@ export class GroupController {
   @UsePipes(ValidationPipe)
   async getByName(@Body() dto: GetGroupDto) {
     return await this.groupService.findOneWithParams({
-      where: { name: dto.name },
+      where: { name: dto.groupName },
     });
   }
 
@@ -43,6 +45,7 @@ export class GroupController {
   }
 
   @Post('create')
+  @HttpCode(201)
   @UsePipes(ValidationPipe)
   async createGroup(@Body() dto: CreateGroupDto) {
     return await this.groupService.createGroup(dto);
@@ -60,9 +63,10 @@ export class GroupController {
     return await this.groupService.deleteGroup(params.id);
   }
 
-  @Get('days')
+  @Get('weeks')
+  @UseGuards(AdminGuard)
   @UsePipes(ValidationPipe)
   async getDaysByGroupId(@Body() dto: GetDays) {
-    return await this.groupService.getWeeksByGroupId(dto);
+    return await this.groupService.getWeeksByGroupName(dto);
   }
 }

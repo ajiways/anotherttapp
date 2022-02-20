@@ -2,15 +2,12 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
-  Param,
+  HttpCode,
   Post,
   Put,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ParamsIdGuard } from '../../guards/params-id.guard';
 import { CreateWeekDto } from './dtos/create-week.dto';
 import { DeleteWeekDto } from './dtos/delete-week.dto';
 import { UpdateWeekDto } from './dtos/update-week.dto';
@@ -20,18 +17,8 @@ import { WeekService } from './week.service';
 export class WeekController {
   constructor(private readonly weekService: WeekService) {}
 
-  @Get()
-  async getAllWeeks() {
-    return await this.weekService.findAll();
-  }
-
-  @Get('one/:id')
-  @UseGuards(ParamsIdGuard)
-  async getWeekById(@Param() params) {
-    return await this.weekService.findOne(params.id);
-  }
-
   @Post('create')
+  @HttpCode(201)
   @UsePipes(ValidationPipe)
   async createWeek(@Body() dto: CreateWeekDto) {
     return await this.weekService.createWeek(dto);
