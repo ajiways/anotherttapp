@@ -1,4 +1,5 @@
 import { IsAlphanumeric, IsEnum, Length } from 'class-validator';
+import { weekDayNames } from '../../day/dtos/create-day.dto';
 import { weekType } from '../../week/week.entity';
 import { lessonType } from '../lesson.entity';
 
@@ -34,5 +35,8 @@ export class CreateLessonDto {
   weekType: weekType;
 
   @Length(3, 16, { message: 'От 3 до 16 символов' })
-  dayName: string;
+  @IsEnum(weekDayNames, {
+    message: 'Только корректные дни недели. Понедельник, Вторник и т.д.',
+  })
+  dayName: weekDayNames;
 }
