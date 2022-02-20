@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Role } from './role.entity';
 import { Group } from '../group/group.entity';
 
 @Entity('users')
@@ -47,4 +49,7 @@ export class User extends BaseEntity {
   @OneToOne(() => Group)
   @JoinColumn()
   group: Group;
+
+  @ManyToMany(() => Role, (role) => role.users)
+  roles: Role[];
 }
