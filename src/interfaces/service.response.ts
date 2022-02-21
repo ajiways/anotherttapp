@@ -6,4 +6,5 @@ export interface ServiceResponse<Entity = void> {
   message: string;
   entity?: BaseEntity;
   entities?: Entity[];
+  token?: string;
 }
