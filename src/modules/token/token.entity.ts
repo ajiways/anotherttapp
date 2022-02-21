@@ -9,7 +9,7 @@ import {
 import { User } from '../user/user.entity';
 
 @Entity('tokens')
-export class TokenEntity extends BaseEntity {
+export class Token extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

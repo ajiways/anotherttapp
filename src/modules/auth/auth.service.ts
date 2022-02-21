@@ -38,8 +38,6 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       } else {
-        console.log(candidate);
-
         const roleNamesArr: string[] = candidate.roles.map((role) => {
           return role.name;
         });
@@ -53,14 +51,22 @@ export class AuthService {
         const refreshPayload: IRefreshPayload = {
           agent,
           date: Date.now(),
+          id: candidate.id,
         };
+
+        const refreshToken =
+          this.tokenService.generateRefreshToken(refreshPayload);
+        const accessToken =
+          this.tokenService.generateAccessToken(accessPayload);
+
+        await this.tokenService.saveToken(candidate.id, refreshToken);
 
         return {
           message: 'Успешный вход',
-          tokens: this.tokenService.generateTokens(
-            accessPayload,
-            refreshPayload,
-          ),
+          tokens: {
+            accessToken,
+            refreshToken,
+          },
         };
       }
     }

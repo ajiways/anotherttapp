@@ -1,16 +1,28 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Response } from 'express';
+import { RefreshToken } from '../../decorators/token.decorator';
+import { TokenService } from './token.service';
 
 @Controller('token')
 export class TokenController {
-  @Get('refresh')
-  refresh() {
-    // TODO: Метод будет обновлять токен по сдерствам refresh token
-    throw new HttpException('Пока не реализовано', HttpStatus.BAD_REQUEST);
-  }
+  constructor(private readonly tokenService: TokenService) {}
 
-  @Get('check')
-  check() {
-    // TODO: Метод будет проверять актуален ли токен на данный момент
-    throw new HttpException('Пока не реализовано', HttpStatus.BAD_REQUEST);
+  @Get('refresh')
+  async refresh(
+    @RefreshToken() token: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.tokenService.refresh(token);
+
+    res.cookie('refreshToken', result.refreshToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Токен успешно обновлен',
+      token: result.accessToken,
+    };
   }
 }

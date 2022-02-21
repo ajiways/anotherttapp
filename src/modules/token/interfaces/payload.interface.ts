@@ -5,6 +5,7 @@ export interface IAccessPayload {
 }
 
 export interface IRefreshPayload {
+  id: number;
   agent: string;
   date: number;
 }
