@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IParams } from '../../interfaces/params.interface';
+import { IRelations } from '../../interfaces/relations.interface';
 import { CreateRoleDto } from './dtos/create-role.dto';
 import { Role } from './role.entity';
 
@@ -21,6 +22,10 @@ export class RoleService {
     }
 
     return candidate;
+  }
+
+  async findAllWithParams(params: IParams, relations?: IRelations) {
+    return await this.roleRepository.find({ ...params, ...relations });
   }
 
   async create(dto: CreateRoleDto) {
