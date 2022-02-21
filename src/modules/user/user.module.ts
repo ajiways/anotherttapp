@@ -16,8 +16,6 @@ import { RoleService } from './role.service';
   imports: [TypeOrmModule.forFeature([User, Group, Week, Day, Role])],
   providers: [UserService, GroupService, WeekService, DayService, RoleService],
   controllers: [UserController],
-  exports: [UserService],
+  exports: [UserService, RoleService],
 })
 export class UserModule {}
-
-// TODO: Роли
